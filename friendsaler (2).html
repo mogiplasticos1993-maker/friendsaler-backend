@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Friendsaler — Análise de Vendedores</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c0e14;--bg2:#12151f;--bg3:#191d2b;--bg4:#1f2436;--bg5:#262d40;
+  --border:#252d42;--border2:#333d58;--border3:#404d6a;
+  --text:#dde1f0;--text2:#7d87a6;--text3:#4a5370;
+  --green:#22c55e;--green-bg:rgba(34,197,94,.1);--green-border:rgba(34,197,94,.2);
+  --amber:#f59e0b;--amber-bg:rgba(245,158,11,.1);--amber-border:rgba(245,158,11,.2);
+  --red:#ef4444;--red-bg:rgba(239,68,68,.1);--red-border:rgba(239,68,68,.2);
+  --blue:#60a5fa;--blue-bg:rgba(96,165,250,.1);--blue-border:rgba(96,165,250,.2);
+  --indigo:#818cf8;--indigo-bg:rgba(129,140,248,.1);--indigo-border:rgba(129,140,248,.25);
+  --radius:10px;--radius-lg:14px;--radius-xl:18px;
+}
+
+html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
+
+/* ── LAYOUT ── */
+.app{display:flex;flex-direction:column;height:100vh}
+.topbar{height:50px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 18px;gap:0;flex-shrink:0;position:relative;z-index:10}
+.brand{display:flex;align-items:center;gap:9px;margin-right:28px;text-decoration:none}
+.brand-icon{width:28px;height:28px;background:var(--indigo-bg);border:1px solid var(--indigo-border);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.brand-icon svg{width:14px;height:14px}
+.brand-name{font-size:14px;font-weight:600;color:var(--text);letter-spacing:-.01em}
+.brand-name span{color:var(--indigo)}
+.nav-tabs{display:flex;gap:2px}
+.nav-tab{height:50px;padding:0 16px;display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;user-select:none;white-space:nowrap}
+.nav-tab svg{width:15px;height:15px;opacity:.6;transition:opacity .15s}
+.nav-tab:hover{color:var(--text)}
+.nav-tab:hover svg{opacity:.9}
+.nav-tab.active{color:var(--indigo);border-bottom-color:var(--indigo)}
+.nav-tab.active svg{opacity:1;color:var(--indigo)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:glow-pulse 2.5s infinite}
+@keyframes glow-pulse{0%,100%{box-shadow:0 0 6px var(--green)}50%{box-shadow:0 0 14px var(--green)}}
+.status-label{font-size:12px;color:var(--text2)}
+
+/* ── PAGES ── */
+.pages{flex:1;overflow:hidden;position:relative}
+.page{position:absolute;inset:0;display:none;flex-direction:column;overflow:hidden}
+.page.active{display:flex}
+
+/* ── COMMON ── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px}
+.card-sm{padding:13px 15px}
+.card-title{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.09em;margin-bottom:11px}
+.tag{display:inline-flex;align-items:center;font-size:11px;font-weight:500;padding:2px 9px;border-radius:99px;white-space:nowrap}
+.tag-g{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.tag-a{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
+.tag-r{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.tag-b{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+.tag-i{background:var(--indigo-bg);color:var(--indigo);border:1px solid var(--indigo-border)}
+.btn{padding:8px 16px;border-radius:var(--radius);border:none;cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;font-weight:500;transition:all .15s;outline:none;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--indigo);color:#fff}
+.btn-primary:hover:not(:disabled){background:#6d75f0}
+.btn-primary:active:not(:disabled){transform:scale(.97)}
+.btn-primary:disabled{opacity:.4;cursor:default}
+.btn-ghost{background:var(--bg3);border:1px solid var(--border2);color:var(--text2)}
+.btn-ghost:hover:not(:disabled){border-color:var(--border3);color:var(--text);background:var(--bg4)}
+.btn-ghost:disabled{opacity:.4;cursor:default}
+.btn-sm{padding:5px 11px;font-size:12px}
+.progress-bar{height:5px;background:var(--bg5);border-radius:99px;overflow:hidden}
+.progress-fill{height:100%;border-radius:99px;transition:width .5s ease}
+.avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;flex-shrink:0}
+.spinner{display:inline-block;width:13px;height:13px;border:2px solid var(--border2);border-top-color:var(--indigo);border-radius:50%;animation:spin .65s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.divider{height:1px;background:var(--border);margin:8px 0}
+
+/* ═══════════════════════════════════════
+   PAGE 1 — ATENDIMENTO
+═══════════════════════════════════════ */
+.chat-layout{display:grid;grid-template-columns:255px 1fr 275px;flex:1;overflow:hidden}
+
+/* Conv list */
+.conv-list{background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column}
+.conv-list-header{padding:11px 14px;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;justify-content:space-between;align-items:center}
+.conv-item{padding:11px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s;position:relative}
+.conv-item:hover{background:var(--bg3)}
+.conv-item.active{background:var(--bg3)}
+.conv-item.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--indigo);border-radius:0 2px 2px 0}
+.conv-item-row{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.conv-item-name{font-size:13px;font-weight:500;color:var(--text)}
+.conv-item-time{font-size:11px;color:var(--text3);flex-shrink:0}
+.conv-item-preview{font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;display:flex;align-items:center;gap:5px}
+.unread-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+/* Chat main */
+.chat-main{display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+.chat-header{padding:11px 16px;border-bottom:1px solid var(--border);background:var(--bg2);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.chat-header-info{flex:1;min-width:0}
+.chat-header-name{font-size:13px;font-weight:500}
+.chat-header-sub{font-size:11px;color:var(--text2)}
+.chat-header-tags{display:flex;gap:6px;flex-shrink:0}
+.chat-messages{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:8px}
+.msg-wrap{display:flex;flex-direction:column;gap:2px}
+.msg-wrap.client{align-items:flex-start}
+.msg-wrap.seller{align-items:flex-end}
+.msg-sender{font-size:10px;color:var(--text3);padding:0 4px}
+.msg{max-width:75%;padding:9px 13px;border-radius:12px;font-size:13px;line-height:1.55;word-break:break-word}
+.msg.client{background:var(--bg3);border:1px solid var(--border);border-bottom-left-radius:4px}
+.msg.seller{background:var(--indigo);color:#fff;border-bottom-right-radius:4px}
+.msg-time{font-size:10px;opacity:.5;margin-top:3px;text-align:right}
+.chat-input-area{padding:12px 16px;border-top:1px solid var(--border);background:var(--bg2);display:flex;gap:8px;flex-shrink:0;align-items:flex-end}
+.chat-input{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);padding:9px 13px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;resize:none;outline:none;transition:border-color .15s;max-height:100px;min-height:38px}
+.chat-input:focus{border-color:var(--border3)}
+.chat-input::placeholder{color:var(--text3)}
+
+/* AI panel */
+.ai-panel{background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.ai-panel-header{padding:11px 14px;border-bottom:1px solid var(--border);font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;display:flex;align-items:center;gap:7px;flex-shrink:0}
+.ai-live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:glow-pulse 2s infinite}
+.ai-panel-body{flex:1;overflow-y:auto;padding:11px;display:flex;flex-direction:column;gap:9px}
+.ai-block{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:11px 13px}
+.ai-block-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.ai-block.indigo{border-color:var(--indigo-border)}
+.ai-block.indigo .ai-block-label{color:var(--indigo)}
+.ai-block.amber{border-color:var(--amber-border)}
+.ai-block.amber .ai-block-label{color:var(--amber)}
+.ai-block.green{border-color:var(--green-border)}
+.ai-block.green .ai-block-label{color:var(--green)}
+.ai-block.plain .ai-block-label{color:var(--text3)}
+.score-display{display:flex;align-items:baseline;gap:5px;margin-bottom:8px}
+.score-big{font-size:30px;font-weight:600;line-height:1}
+.score-denom{font-size:14px;color:var(--text2)}
+.alert-row{display:flex;gap:7px;align-items:flex-start;padding:4px 0;font-size:12px;color:var(--text2);line-height:1.4}
+.alert-icon{flex-shrink:0;margin-top:1px;font-size:13px}
+.suggestion-bubble{font-size:12px;color:var(--text);line-height:1.55;background:var(--bg4);border-radius:9px;padding:10px 12px;cursor:pointer;border:1px solid var(--border);transition:all .15s;margin-bottom:8px}
+.suggestion-bubble:hover{border-color:var(--indigo-border);background:var(--bg5)}
+
+/* ═══════════════════════════════════════
+   PAGE 2 — PAINEL
+═══════════════════════════════════════ */
+.page-scroll{flex:1;overflow-y:auto;padding:20px 22px}
+.page-header{margin-bottom:20px;display:flex;justify-content:space-between;align-items:flex-start}
+.page-title{font-size:20px;font-weight:600;letter-spacing:-.02em}
+.page-sub{font-size:12px;color:var(--text2);margin-top:3px}
+.metrics-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-bottom:13px}
+.metric-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:15px 17px}
+.metric-card-label{font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+.metric-card-value{font-size:30px;font-weight:600;line-height:1;margin-bottom:4px}
+.metric-card-sub{font-size:12px;color:var(--text2);margin-bottom:8px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:13px}
+.criteria-row{display:flex;flex-direction:column;gap:9px}
+.crit-item{display:flex;flex-direction:column;gap:5px}
+.crit-label-row{display:flex;justify-content:space-between;font-size:12px}
+.crit-label{color:var(--text2)}
+.errors-list .row-item{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
+.errors-list .row-item:last-child{border-bottom:none}
+.recents-list .recent-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
+.recents-list .recent-row:last-child{border-bottom:none}
+.recent-tags{display:flex;gap:6px}
+
+/* ═══════════════════════════════════════
+   PAGE 3 — ANÁLISE
+═══════════════════════════════════════ */
+.analysis-layout{display:grid;grid-template-columns:1fr 1fr;flex:1;overflow:hidden}
+.analysis-left{border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.analysis-right{display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+.panel-hdr{padding:12px 18px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
+.panel-hdr-title{font-size:13px;font-weight:500}
+.panel-hdr-sub{font-size:12px;color:var(--text2)}
+.conv-textarea{flex:1;background:var(--bg);border:none;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:18px;resize:none;outline:none;line-height:1.75}
+.conv-textarea::placeholder{color:var(--text3)}
+.analysis-actions{padding:12px 16px;border-top:1px solid var(--border);background:var(--bg2);display:flex;gap:8px;flex-shrink:0}
+.analysis-result-wrap{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:11px}
+.result-placeholder{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text3);font-size:13px;text-align:center;padding:40px;gap:12px;line-height:1.7}
+.result-placeholder svg{opacity:.3}
+.result-scores{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.result-score-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:13px 15px}
+.result-score-card .val{font-size:34px;font-weight:600;line-height:1;margin-bottom:6px}
+.result-section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:13px 15px}
+.result-section h4{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.result-item{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--text2);padding:4px 0;line-height:1.5}
+.result-suggestion{font-size:12px;color:var(--text);background:var(--bg4);border-radius:9px;padding:11px 13px;line-height:1.6;margin-top:4px;border:1px solid var(--border2)}
+
+/* ═══════════════════════════════════════
+   PAGE 4 — RELATÓRIOS
+═══════════════════════════════════════ */
+.ranking-list{display:flex;flex-direction:column;gap:0}
+.ranking-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.ranking-row:last-child{border-bottom:none}
+.rank-pos{font-size:11px;font-weight:600;color:var(--text3);width:18px;text-align:center}
+.rank-name{flex:1;font-size:13px}
+.rank-bar-wrap{width:80px}
+.chart-bars{display:flex;align-items:flex-end;gap:5px;height:70px;padding-top:4px}
+.bar-col{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1}
+.bar{width:100%;border-radius:3px 3px 0 0;min-height:3px;transition:height .4s ease}
+.bar-lbl{font-size:10px;color:var(--text3)}
+.errors-wide-list .error-wide-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;gap:14px}
+.errors-wide-list .error-wide-row:last-child{border-bottom:none}
+.error-bar-side{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.error-bar-mini{width:100px;height:5px;background:var(--bg5);border-radius:99px;overflow:hidden}
+.error-bar-fill{height:100%;border-radius:99px}
+
+select{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);padding:7px 11px;color:var(--text);font-size:12px;font-family:'DM Sans',sans-serif;outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;padding-right:28px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237d87a6' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--indigo)"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      </div>
+      <span class="brand-name">Friend<span>saler</span></span>
+    </div>
+    <div class="nav-tabs">
+      <div class="nav-tab active" onclick="setPage('atendimento',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Atendimento
+      </div>
+      <div class="nav-tab" onclick="setPage('painel',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Painel
+      </div>
+      <div class="nav-tab" onclick="setPage('analise',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        Análise
+      </div>
+      <div class="nav-tab" onclick="setPage('relatorios',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Relatórios
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="status-dot"></div>
+      <span class="status-label">IA ativa</span>
+    </div>
+  </div>
+
+  <div class="pages">
+
+    <!-- ═══════════════════════════════════════
+         PAGE 1 — ATENDIMENTO
+    ═══════════════════════════════════════ -->
+    <div class="page active" id="page-atendimento">
+      <div class="chat-layout">
+
+        <!-- Conv list -->
+        <div class="conv-list">
+          <div class="conv-list-header">
+            <span>Conversas</span>
+            <span class="tag tag-i">3 ativas</span>
+          </div>
+          <div class="conv-item active" onclick="loadConv(0,this)">
+            <div class="conv-item-row">
+              <span class="conv-item-name">Maria Fernanda</span>
+              <span class="conv-item-time">2min</span>
+            </div>
+            <div class="conv-item-preview"><span class="unread-dot" style="background:var(--amber)"></span>Quanto fica o frete?</div>
+          </div>
+          <div class="conv-item" onclick="loadConv(1,this)">
+            <div class="conv-item-row">
+              <span class="conv-item-name">Carlos Eduardo</span>
+              <span class="conv-item-time">14min</span>
+            </div>
+            <div class="conv-item-preview"><span class="unread-dot" style="background:var(--red)"></span>Preciso até sexta</div>
+          </div>
+          <div class="conv-item" onclick="loadConv(2,this)">
+            <div class="conv-item-row">
+              <span class="conv-item-name">Beatriz Lima</span>
+              <span class="conv-item-time">28min</span>
+            </div>
+            <div class="conv-item-preview"><span class="unread-dot" style="background:var(--green)"></span>Fechado! Pode enviar</div>
+          </div>
+          <div class="conv-item" onclick="loadConv(3,this)">
+            <div class="conv-item-row">
+              <span class="conv-item-name">Ricardo Souza</span>
+              <span class="conv-item-time">41min</span>
+            </div>
+            <div class="conv-item-preview"><span class="unread-dot" style="background:var(--green)"></span>Quanto fica no cartão?</div>
+          </div>
+        </div>
+
+        <!-- Chat area -->
+        <div class="chat-main">
+          <div class="chat-header">
+            <div class="avatar" id="chat-avatar" style="width:34px;height:34px;font-size:13px;background:var(--amber-bg);color:var(--amber)">MF</div>
+            <div class="chat-header-info">
+              <div class="chat-header-name" id="chat-name">Maria Fernanda</div>
+              <div class="chat-header-sub">WhatsApp Business · online agora</div>
+            </div>
+            <div class="chat-header-tags">
+              <span class="tag" id="chat-score-tag">Nota: 5/10</span>
+              <span class="tag" id="chat-chance-tag">Chance: 55%</span>
+            </div>
+          </div>
+          <div class="chat-messages" id="chat-messages"></div>
+          <div class="chat-input-area">
+            <textarea class="chat-input" id="chat-input" rows="2" placeholder="Digite a resposta do vendedor..."></textarea>
+            <button class="btn btn-primary" onclick="sendChatMsg()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              Enviar
+            </button>
+          </div>
+        </div>
+
+        <!-- AI panel -->
+        <div class="ai-panel">
+          <div class="ai-panel-header">
+            <span class="ai-live-dot"></span>
+            Assistente IA
+          </div>
+          <div class="ai-panel-body">
+            <div class="ai-block indigo">
+              <div class="ai-block-label">Pontuação ao vivo</div>
+              <div class="score-display">
+                <span class="score-big" id="live-score">5</span>
+                <span class="score-denom">/10</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill" id="score-bar" style="width:50%;background:var(--amber)"></div></div>
+            </div>
+
+            <div class="ai-block amber" id="alerts-block">
+              <div class="ai-block-label">Alertas da IA</div>
+              <div id="alerts-list"></div>
+            </div>
+
+            <div class="ai-block green" id="suggestion-block">
+              <div class="ai-block-label">Sugestão de resposta</div>
+              <div class="suggestion-bubble" id="suggestion-text" onclick="useSuggestion()"></div>
+              <button class="btn btn-ghost btn-sm" style="width:100%" id="regen-btn" onclick="regenSuggestion()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                Nova sugestão da IA
+              </button>
+            </div>
+
+            <div class="ai-block plain">
+              <div class="ai-block-label">Probabilidade de fechamento</div>
+              <div class="score-display">
+                <span class="score-big" id="live-chance">55</span>
+                <span class="score-denom">%</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill" id="chance-bar" style="width:55%"></div></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /page-atendimento -->
+
+    <!-- ═══════════════════════════════════════
+         PAGE 2 — PAINEL
+    ═══════════════════════════════════════ -->
+    <div class="page" id="page-painel">
+      <div class="page-scroll">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Painel do Vendedor</div>
+            <div class="page-sub">Lucas Mendes · Hoje, 20 abr 2026</div>
+          </div>
+          <span class="tag tag-g" style="font-size:12px;padding:4px 12px">Turno ativo</span>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-card-label">Nota média hoje</div>
+            <div class="metric-card-value" style="color:var(--green)">7.4</div>
+            <div class="metric-card-sub" style="color:var(--green)">↑ +0.8 vs ontem</div>
+            <div class="progress-bar"><div class="progress-fill" style="width:74%;background:var(--green)"></div></div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-card-label">Taxa de fechamento</div>
+            <div class="metric-card-value" style="color:var(--indigo)">62%</div>
+            <div class="metric-card-sub">11 de 18 contatos</div>
+            <div class="progress-bar"><div class="progress-fill" style="width:62%;background:var(--indigo)"></div></div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-card-label">Tempo médio resposta</div>
+            <div class="metric-card-value">1m 42s</div>
+            <div class="metric-card-sub">Meta: &lt;2min <span style="color:var(--green)">✓</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:85%;background:var(--blue)"></div></div>
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div class="card">
+            <div class="card-title">Critérios de avaliação</div>
+            <div class="criteria-row">
+              <div class="crit-item">
+                <div class="crit-label-row"><span class="crit-label">Tentativa de fechamento</span><span style="color:var(--green);font-size:12px;font-weight:500">8/10</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:80%;background:var(--green)"></div></div>
+              </div>
+              <div class="crit-item">
+                <div class="crit-label-row"><span class="crit-label">Informou prazo</span><span style="color:var(--green);font-size:12px;font-weight:500">9/10</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:90%;background:var(--green)"></div></div>
+              </div>
+              <div class="crit-item">
+                <div class="crit-label-row"><span class="crit-label">Tratou objeções</span><span style="color:var(--amber);font-size:12px;font-weight:500">6/10</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:60%;background:var(--amber)"></div></div>
+              </div>
+              <div class="crit-item">
+                <div class="crit-label-row"><span class="crit-label">Orçamento completo</span><span style="color:var(--amber);font-size:12px;font-weight:500">5/10</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:50%;background:var(--amber)"></div></div>
+              </div>
+              <div class="crit-item">
+                <div class="crit-label-row"><span class="crit-label">Cordialidade</span><span style="color:var(--green);font-size:12px;font-weight:500">9/10</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:90%;background:var(--green)"></div></div>
+              </div>
+              <div class="crit-item">
+                <div class="crit-label-row"><span class="crit-label">Opções de pagamento</span><span style="color:var(--amber);font-size:12px;font-weight:500">7/10</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:70%;background:var(--amber)"></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Erros mais frequentes hoje</div>
+            <div class="errors-list">
+              <div class="row-item"><span>Não falou do frete</span><span class="tag tag-r">5×</span></div>
+              <div class="row-item"><span>Não tentou fechar</span><span class="tag tag-r">4×</span></div>
+              <div class="row-item"><span>Orçamento incompleto</span><span class="tag tag-a">3×</span></div>
+              <div class="row-item"><span>Não informou prazo</span><span class="tag tag-a">2×</span></div>
+              <div class="row-item"><span>Não falou de pagamento</span><span class="tag tag-g">1×</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Últimas conversas</div>
+          <div class="recents-list">
+            <div class="recent-row"><span>Maria Fernanda</span><div class="recent-tags"><span class="tag tag-a">Nota 5</span><span class="tag tag-a">Aberta</span></div></div>
+            <div class="recent-row"><span>Carlos Eduardo</span><div class="recent-tags"><span class="tag tag-r">Nota 4</span><span class="tag tag-r">Perdida</span></div></div>
+            <div class="recent-row"><span>Beatriz Lima</span><div class="recent-tags"><span class="tag tag-g">Nota 9</span><span class="tag tag-g">Fechado</span></div></div>
+            <div class="recent-row"><span>Ricardo Souza</span><div class="recent-tags"><span class="tag tag-g">Nota 8</span><span class="tag tag-g">Fechado</span></div></div>
+            <div class="recent-row"><span>Ana Paula Costa</span><div class="recent-tags"><span class="tag tag-a">Nota 6</span><span class="tag tag-a">Em andamento</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /page-painel -->
+
+    <!-- ═══════════════════════════════════════
+         PAGE 3 — ANÁLISE
+    ═══════════════════════════════════════ -->
+    <div class="page" id="page-analise">
+      <div class="analysis-layout">
+        <div class="analysis-left">
+          <div class="panel-hdr">
+            <span class="panel-hdr-title">Cole a conversa</span>
+            <span class="panel-hdr-sub">WhatsApp, copie e cole aqui</span>
+          </div>
+          <textarea class="conv-textarea" id="conv-textarea" placeholder="Cole aqui a conversa do WhatsApp...
+
+Exemplo:
+Cliente: Oi, quanto custa o produto X?
+Vendedor: Olá! O produto X custa R$ 150.
+Cliente: Tem parcelamento?
+Vendedor: Sim, em até 3x sem juros.
+Cliente: Tá bom, vou pensar...
+Vendedor: Ok, qualquer dúvida estou aqui!"></textarea>
+          <div class="analysis-actions">
+            <button class="btn btn-primary" onclick="analyzeConv()" id="analyze-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              Analisar com IA
+            </button>
+            <button class="btn btn-ghost" onclick="loadExample()">Carregar exemplo</button>
+          </div>
+        </div>
+        <div class="analysis-right">
+          <div class="panel-hdr">
+            <span class="panel-hdr-title">Resultado da análise</span>
+          </div>
+          <div class="analysis-result-wrap" id="analysis-result">
+            <div class="result-placeholder">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              Cole uma conversa ao lado e clique em<br><strong style="color:var(--text2)">"Analisar com IA"</strong><br>para ver o feedback detalhado.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /page-analise -->
+
+    <!-- ═══════════════════════════════════════
+         PAGE 4 — RELATÓRIOS
+    ═══════════════════════════════════════ -->
+    <div class="page" id="page-relatorios">
+      <div class="page-scroll">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Relatórios da Equipe</div>
+            <div class="page-sub">Visão geral de desempenho</div>
+          </div>
+          <select>
+            <option>Esta semana</option>
+            <option>Este mês</option>
+            <option>Últimos 30 dias</option>
+          </select>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-card-label">Total de atendimentos</div>
+            <div class="metric-card-value">247</div>
+            <div class="metric-card-sub" style="color:var(--green)">↑ +18% vs semana anterior</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-card-label">Taxa de fechamento geral</div>
+            <div class="metric-card-value" style="color:var(--green)">58%</div>
+            <div class="metric-card-sub">143 vendas concluídas</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-card-label">Nota média da equipe</div>
+            <div class="metric-card-value" style="color:var(--indigo)">6.9</div>
+            <div class="metric-card-sub">Meta: 7.5 <span style="color:var(--amber)">⚠</span></div>
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div class="card">
+            <div class="card-title">Ranking de vendedores</div>
+            <div class="ranking-list">
+              <div class="ranking-row">
+                <div class="rank-pos">1</div>
+                <div class="avatar" style="width:27px;height:27px;font-size:11px;background:var(--green-bg);color:var(--green)">BL</div>
+                <span class="rank-name">Beatriz Lima</span>
+                <div class="rank-bar-wrap"><div class="progress-bar"><div class="progress-fill" style="width:91%;background:var(--green)"></div></div></div>
+                <span class="tag tag-g">9.1</span>
+              </div>
+              <div class="ranking-row">
+                <div class="rank-pos">2</div>
+                <div class="avatar" style="width:27px;height:27px;font-size:11px;background:var(--blue-bg);color:var(--blue)">RS</div>
+                <span class="rank-name">Ricardo Souza</span>
+                <div class="rank-bar-wrap"><div class="progress-bar"><div class="progress-fill" style="width:84%;background:var(--blue)"></div></div></div>
+                <span class="tag tag-g">8.4</span>
+              </div>
+              <div class="ranking-row">
+                <div class="rank-pos">3</div>
+                <div class="avatar" style="width:27px;height:27px;font-size:11px;background:var(--amber-bg);color:var(--amber)">LM</div>
+                <span class="rank-name">Lucas Mendes</span>
+                <div class="rank-bar-wrap"><div class="progress-bar"><div class="progress-fill" style="width:74%;background:var(--amber)"></div></div></div>
+                <span class="tag tag-a">7.4</span>
+              </div>
+              <div class="ranking-row">
+                <div class="rank-pos">4</div>
+                <div class="avatar" style="width:27px;height:27px;font-size:11px;background:var(--indigo-bg);color:var(--indigo)">AP</div>
+                <span class="rank-name">Ana Paula Costa</span>
+                <div class="rank-bar-wrap"><div class="progress-bar"><div class="progress-fill" style="width:68%;background:var(--indigo)"></div></div></div>
+                <span class="tag tag-a">6.8</span>
+              </div>
+              <div class="ranking-row">
+                <div class="rank-pos">5</div>
+                <div class="avatar" style="width:27px;height:27px;font-size:11px;background:var(--red-bg);color:var(--red)">CE</div>
+                <span class="rank-name">Carlos Eduardo</span>
+                <div class="rank-bar-wrap"><div class="progress-bar"><div class="progress-fill" style="width:52%;background:var(--red)"></div></div></div>
+                <span class="tag tag-r">5.2</span>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Atendimentos por dia</div>
+            <div class="chart-bars">
+              <div class="bar-col"><div class="bar" style="height:42px;background:var(--indigo);opacity:.6"></div><div class="bar-lbl">Seg</div></div>
+              <div class="bar-col"><div class="bar" style="height:60px;background:var(--indigo)"></div><div class="bar-lbl">Ter</div></div>
+              <div class="bar-col"><div class="bar" style="height:32px;background:var(--indigo);opacity:.6"></div><div class="bar-lbl">Qua</div></div>
+              <div class="bar-col"><div class="bar" style="height:68px;background:var(--indigo)"></div><div class="bar-lbl">Qui</div></div>
+              <div class="bar-col"><div class="bar" style="height:50px;background:var(--indigo);opacity:.6"></div><div class="bar-lbl">Sex</div></div>
+              <div class="bar-col"><div class="bar" style="height:24px;background:var(--bg5)"></div><div class="bar-lbl">Sáb</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Erros mais comuns da equipe esta semana</div>
+          <div class="errors-wide-list">
+            <div class="error-wide-row"><span>Não tentou fechar a venda</span><div class="error-bar-side"><div class="error-bar-mini"><div class="error-bar-fill" style="width:82%;background:var(--red)"></div></div><span class="tag tag-r">82%</span></div></div>
+            <div class="error-wide-row"><span>Não informou prazo de entrega</span><div class="error-bar-side"><div class="error-bar-mini"><div class="error-bar-fill" style="width:67%;background:var(--amber)"></div></div><span class="tag tag-a">67%</span></div></div>
+            <div class="error-wide-row"><span>Resposta muito vaga ao cliente</span><div class="error-bar-side"><div class="error-bar-mini"><div class="error-bar-fill" style="width:54%;background:var(--amber)"></div></div><span class="tag tag-a">54%</span></div></div>
+            <div class="error-wide-row"><span>Não falou das opções de pagamento</span><div class="error-bar-side"><div class="error-bar-mini"><div class="error-bar-fill" style="width:41%;background:var(--blue)"></div></div><span class="tag tag-b">41%</span></div></div>
+            <div class="error-wide-row"><span>Não tratou objeções do cliente</span><div class="error-bar-side"><div class="error-bar-mini"><div class="error-bar-fill" style="width:29%;background:var(--blue)"></div></div><span class="tag tag-b">29%</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /page-relatorios -->
+
+  </div><!-- /pages -->
+</div><!-- /app -->
+
+<script>
+// ═══════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════
+const API_URL = 'https://friendsaler-backend-production.up.railway.app';
+
+// ═══════════════════════════════════
+// DATA
+// ═══════════════════════════════════
+const CONVS = [
+  {
+    name:'Maria Fernanda', initials:'MF',
+    avatarBg:'var(--amber-bg)', avatarColor:'var(--amber)',
+    score:5, chance:55,
+    msgs:[
+      {from:'client', text:'Oi, boa tarde! Vi o anúncio do kit de escritório. Quanto fica com frete para Campinas?', time:'14:22'},
+      {from:'seller', text:'Boa tarde! O kit custa R$ 189. O frete a gente calcula depois.', time:'14:24'},
+      {from:'client', text:'Ah entendi... e tem desconto à vista?', time:'14:25'},
+      {from:'seller', text:'Tem sim, pode ser no PIX.', time:'14:26'},
+      {from:'client', text:'E quanto fica o frete mesmo?', time:'14:28'}
+    ],
+    alerts:['Faltou informar o valor do frete diretamente','Faltou tentar fechar a venda','Informe opções de pagamento com clareza'],
+    suggestion:'"O frete para Campinas fica R$ 25 e entrego até quinta-feira. No PIX você ainda tem 5% de desconto, saindo por R$ 179,55. Posso fechar agora e te envio o link de pagamento?"'
+  },
+  {
+    name:'Carlos Eduardo', initials:'CE',
+    avatarBg:'var(--red-bg)', avatarColor:'var(--red)',
+    score:4, chance:25,
+    msgs:[
+      {from:'client', text:'Preciso de 50 unidades do produto para sexta. Consegue?', time:'14:05'},
+      {from:'seller', text:'Oi! Vou ver aqui no estoque.', time:'14:08'},
+      {from:'client', text:'Já verificou? Preciso confirmar hoje.', time:'14:15'},
+      {from:'seller', text:'Ainda estou verificando.', time:'14:18'},
+      {from:'client', text:'Precisaria de uma resposta rápida...', time:'14:20'}
+    ],
+    alerts:['Cliente demonstrou urgência — responda com prazo confirmado','Não confirmou disponibilidade em 15min','Risco alto de perda por demora na resposta'],
+    suggestion:'"Carlos, temos as 50 unidades em estoque! Consigo entregar até sexta com frete expresso. Valor total: R$ 890. Posso emitir a NF agora. Confirma o pedido?"'
+  },
+  {
+    name:'Beatriz Lima', initials:'BL',
+    avatarBg:'var(--green-bg)', avatarColor:'var(--green)',
+    score:9, chance:98,
+    msgs:[
+      {from:'client', text:'Boa tarde! Quero o combo premium. Como funciona o pagamento?', time:'13:45'},
+      {from:'seller', text:'Boa tarde, Beatriz! O combo premium é R$ 350. Pode pagar no PIX (5% de desconto = R$ 332,50), cartão à vista ou em até 6x sem juros. Entrego em até 3 dias úteis.', time:'13:46'},
+      {from:'client', text:'Perfeito! Vou pagar no PIX mesmo.', time:'13:47'},
+      {from:'seller', text:'Ótimo! Gerando o link PIX agora. Após o pagamento você recebe a confirmação em minutos e o rastreio assim que postar.', time:'13:48'},
+      {from:'client', text:'Fechado! Pode enviar o link.', time:'13:49'}
+    ],
+    alerts:[],
+    suggestion:'"Obrigado pela compra, Beatriz! Assim que confirmar o pagamento você recebe o código de rastreio. Qualquer dúvida, estou aqui!"'
+  },
+  {
+    name:'Ricardo Souza', initials:'RS',
+    avatarBg:'var(--blue-bg)', avatarColor:'var(--blue)',
+    score:7, chance:72,
+    msgs:[
+      {from:'client', text:'Olá! Tenho interesse no notebook i7. Vocês têm?', time:'13:10'},
+      {from:'seller', text:'Oi Ricardo! Temos sim, é o modelo mais vendido aqui. Fica R$ 4.200 à vista ou em até 12x de R$ 388.', time:'13:11'},
+      {from:'client', text:'Quanto fica no cartão de crédito?', time:'13:12'}
+    ],
+    alerts:['Informe também o prazo de entrega','Tente fechar a venda com uma oferta direta'],
+    suggestion:'"No cartão fica 12x de R$ 388 sem juros. Entrego em 2 dias úteis para o seu CEP. Posso separar uma unidade para você agora?"'
+  }
+];
+
+let currentConv = 0;
+
+// ═══════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════
+function setPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  el.classList.add('active');
+}
+
+// ═══════════════════════════════════
+// CHAT
+// ═══════════════════════════════════
+function loadConv(idx, el) {
+  currentConv = idx;
+  document.querySelectorAll('.conv-item').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  const c = CONVS[idx];
+  document.getElementById('chat-name').textContent = c.name;
+  const av = document.getElementById('chat-avatar');
+  av.textContent = c.initials;
+  av.style.background = c.avatarBg;
+  av.style.color = c.avatarColor;
+  renderMessages(c.msgs);
+  renderAIPanel(c);
+}
+
+function renderMessages(msgs) {
+  const el = document.getElementById('chat-messages');
+  el.innerHTML = msgs.map(m => `
+    <div class="msg-wrap ${m.from}">
+      <div class="msg ${m.from}">${m.text}<div class="msg-time">${m.time}</div></div>
+    </div>`).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+function renderAIPanel(c) {
+  const score = c.score;
+  const chance = c.chance;
+  const scoreColor = score >= 7 ? 'var(--green)' : score >= 5 ? 'var(--amber)' : 'var(--red)';
+  const chanceColor = chance >= 70 ? 'var(--green)' : chance >= 40 ? 'var(--amber)' : 'var(--red)';
+
+  document.getElementById('live-score').textContent = score;
+  document.getElementById('live-score').style.color = scoreColor;
+  document.getElementById('score-bar').style.width = (score * 10) + '%';
+  document.getElementById('score-bar').style.background = scoreColor;
+
+  document.getElementById('live-chance').textContent = chance;
+  document.getElementById('live-chance').style.color = chanceColor;
+  document.getElementById('chance-bar').style.width = chance + '%';
+  document.getElementById('chance-bar').style.background = chanceColor;
+
+  const scoreTagClass = score >= 7 ? 'tag-g' : score >= 5 ? 'tag-a' : 'tag-r';
+  document.getElementById('chat-score-tag').className = 'tag ' + scoreTagClass;
+  document.getElementById('chat-score-tag').textContent = `Nota: ${score}/10`;
+
+  const chanceTagClass = chance >= 70 ? 'tag-g' : chance >= 40 ? 'tag-a' : 'tag-r';
+  document.getElementById('chat-chance-tag').className = 'tag ' + chanceTagClass;
+  document.getElementById('chat-chance-tag').textContent = `Chance: ${chance}%`;
+
+  const alertsEl = document.getElementById('alerts-list');
+  if (c.alerts.length === 0) {
+    alertsEl.innerHTML = '<div class="alert-row"><span class="alert-icon" style="color:var(--green)">✓</span> Atendimento excelente! Continue assim.</div>';
+    document.getElementById('alerts-block').className = 'ai-block green';
+  } else {
+    alertsEl.innerHTML = c.alerts.map(a =>
+      `<div class="alert-row"><span class="alert-icon" style="color:var(--amber)">⚠</span> ${a}</div>`
+    ).join('');
+    document.getElementById('alerts-block').className = 'ai-block amber';
+  }
+
+  document.getElementById('suggestion-text').textContent = c.suggestion;
+}
+
+function sendChatMsg() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+  const c = CONVS[currentConv];
+  const now = new Date();
+  const time = now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0');
+  c.msgs.push({ from: 'seller', text, time });
+  renderMessages(c.msgs);
+  input.value = '';
+  // Simula melhora da nota ao responder
+  setTimeout(() => {
+    c.score = Math.min(10, c.score + 1);
+    c.chance = Math.min(99, c.chance + 7);
+    renderAIPanel(c);
+  }, 600);
+}
+
+function useSuggestion() {
+  const sug = document.getElementById('suggestion-text').textContent;
+  document.getElementById('chat-input').value = sug.replace(/^"|"$/g, '');
+  document.getElementById('chat-input').focus();
+}
+
+async function regenSuggestion() {
+  const c = CONVS[currentConv];
+  const btn = document.getElementById('regen-btn');
+  const el = document.getElementById('suggestion-text');
+  btn.disabled = true;
+  el.innerHTML = '<span class="spinner"></span> Gerando sugestão...';
+
+  const conv = c.msgs.map(m => `${m.from === 'client' ? 'Cliente' : 'Vendedor'}: ${m.text}`).join('\n');
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: 'Você é um coach de vendas especialista. Analise a conversa e gere UMA sugestão de resposta curta, direta e persuasiva para o vendedor. O objetivo é avançar a venda ou fechar. Responda APENAS com a sugestão entre aspas duplas, sem explicações.',
+        messages: [{ role: 'user', content: `Conversa:\n${conv}\n\nGere a melhor resposta para o vendedor agora.` }]
+      })
+    });
+    const data = await res.json();
+    el.textContent = data.content[0].text.trim();
+  } catch (e) {
+    el.textContent = '"Entendo sua necessidade. Posso confirmar tudo agora e garantir entrega no prazo. Vamos fechar?"';
+  }
+  btn.disabled = false;
+}
+
+// Keyboard enter to send
+document.getElementById('chat-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMsg(); }
+});
+
+// ═══════════════════════════════════
+// ANÁLISE
+// ═══════════════════════════════════
+function loadExample() {
+  document.getElementById('conv-textarea').value =
+`Cliente: Oi! Vi o anúncio do sofá de 3 lugares. Ainda tem disponível?
+Vendedor: Oi! Tem sim.
+Cliente: Quanto custa?
+Vendedor: R$ 1.200.
+Cliente: Tem parcelamento?
+Vendedor: Tem.
+Cliente: Em quantas vezes?
+Vendedor: Até 10x.
+Cliente: E o frete, como funciona?
+Vendedor: Depende do endereço.
+Cliente: Tá, vou pensar e te aviso.
+Vendedor: Ok!`;
+}
+
+async function analyzeConv() {
+  const text = document.getElementById('conv-textarea').value.trim();
+  if (!text) { alert('Cole uma conversa primeiro!'); return; }
+
+  const btn = document.getElementById('analyze-btn');
+  const result = document.getElementById('analysis-result');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Analisando...';
+  result.innerHTML = '<div class="result-placeholder"><span class="spinner" style="width:20px;height:20px;border-width:3px"></span><br>A IA está analisando a conversa...</div>';
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: `Você é um especialista em análise de vendas. Avalie conversas de WhatsApp e retorne SOMENTE um JSON válido, sem markdown, sem texto extra:
+{"nota":7,"chance":65,"acertos":["acerto 1","acerto 2"],"erros":["erro 1","erro 2"],"sugestao":"resposta ideal do vendedor","resumo":"resumo em 1 frase curta"}`,
+        messages: [{ role: 'user', content: `Analise esta conversa:\n\n${text}` }]
+      })
+    });
+    const data = await res.json();
+    const raw = data.content[0].text.replace(/```json|```/g, '').trim();
+    const j = JSON.parse(raw);
+
+    const sc = j.nota >= 7 ? 'var(--green)' : j.nota >= 5 ? 'var(--amber)' : 'var(--red)';
+    const cc = j.chance >= 70 ? 'var(--green)' : j.chance >= 40 ? 'var(--amber)' : 'var(--red)';
+
+    result.innerHTML = `
+      <div class="result-scores">
+        <div class="result-score-card" style="border-color:${sc}33">
+          <div class="card-title">Nota do vendedor</div>
+          <div class="val" style="color:${sc}">${j.nota}<span style="font-size:16px;color:var(--text2);font-weight:400">/10</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${j.nota*10}%;background:${sc}"></div></div>
+        </div>
+        <div class="result-score-card" style="border-color:${cc}33">
+          <div class="card-title">Chance de fechar</div>
+          <div class="val" style="color:${cc}">${j.chance}<span style="font-size:16px;color:var(--text2);font-weight:400">%</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${j.chance}%;background:${cc}"></div></div>
+        </div>
+      </div>
+      <div class="result-section">
+        <h4 style="color:var(--text2)">Resumo da IA</h4>
+        <div style="font-size:13px;color:var(--text);line-height:1.6">${j.resumo}</div>
+      </div>
+      <div class="result-section" style="border-color:var(--green-border)">
+        <h4 style="color:var(--green)">✓ Acertos</h4>
+        ${j.acertos.map(a => `<div class="result-item"><span style="color:var(--green);flex-shrink:0">✓</span>${a}</div>`).join('')}
+      </div>
+      <div class="result-section" style="border-color:var(--red-border)">
+        <h4 style="color:var(--red)">✗ Erros identificados</h4>
+        ${j.erros.map(e => `<div class="result-item"><span style="color:var(--red);flex-shrink:0">✗</span>${e}</div>`).join('')}
+      </div>
+      <div class="result-section" style="border-color:var(--indigo-border)">
+        <h4 style="color:var(--indigo)">Resposta ideal sugerida</h4>
+        <div class="result-suggestion">${j.sugestao}</div>
+      </div>`;
+  } catch (e) {
+    result.innerHTML = '<div class="result-placeholder" style="color:var(--red)">Erro ao analisar a conversa. Verifique e tente novamente.</div>';
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Analisar com IA`;
+}
+
+// ═══════════════════════════════════
+// INIT
+// ═══════════════════════════════════
+loadConv(0, document.querySelector('.conv-item.active'));
+</script>
+</body>
+</html>
