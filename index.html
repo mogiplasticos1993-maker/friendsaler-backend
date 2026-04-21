@@ -1133,28 +1133,39 @@ function toggleDemo(cb) {
 async function humanizeSuggestion() {
   const el = document.getElementById('suggestion-text');
   const text = el.value.trim();
-  if (!text) return;
+  if (!text) { alert('Escreva ou gere uma sugestão primeiro!'); return; }
   const btn = document.getElementById('humanize-btn');
+  const svgIcon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Humanizar';
   btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span>';
+  btn.innerHTML = '<span class="spinner"></span> Humanizando...';
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 500,
         system: 'Você é um especialista em comunicação humana. Reescreva a mensagem de forma mais calorosa, natural e pessoal — como se um amigo experiente estivesse escrevendo. Mantenha o conteúdo e o objetivo, mas suavize o tom, adicione toque humano e remova qualquer rispidez. Responda APENAS com a mensagem reescrita, sem aspas, sem explicações.',
-        messages: [{ role: 'user', content: `Humanize esta mensagem de vendas:
-
-${text}` }]
+        messages: [{ role: 'user', content: 'Humanize esta mensagem de vendas:\n\n' + text }]
       })
     });
     const data = await res.json();
-    el.value = data.content[0].text.trim();
-  } catch(e) {}
-  btn.disabled = false;
-  btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Humanizar';
+    if (data.content && data.content[0]) {
+      el.value = data.content[0].text.trim();
+    } else if (data.error) {
+      console.error('Erro Anthropic:', data.error);
+    }
+  } catch(e) {
+    console.error('Erro humanizar:', e);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = svgIcon;
+  }
 }
 
 // ═══════════════════════════════════
