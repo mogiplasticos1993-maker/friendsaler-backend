@@ -941,23 +941,17 @@ async function simulateClientReply(c, lastSellerMsg) {
   const conv = c.msgs.map(m => `${m.from === 'client' ? 'Cliente' : 'Vendedor'}: ${m.text}`).join('\n');
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch(API_URL + '/api/ai', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': ANTHROPIC_KEY,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 200,
-        system: 'Você é um cliente real de WhatsApp interessado em comprar. Responda de forma natural, curta e realista — como uma pessoa comum responderia no WhatsApp. Use linguagem informal, sem pontuação perfeita, às vezes com erros de digitação leves. Faça perguntas relevantes sobre o produto, peça descontos, pergunte sobre prazo de entrega ou pagamento. Máximo 2 frases. Nunca diga que é IA. Responda APENAS a mensagem do cliente, sem prefixos como "Cliente:" ou aspas.',
-        messages: [{ role: 'user', content: `Histórico da conversa:\n${conv}\n\nO vendedor acabou de dizer: "${lastSellerMsg}"\n\nResponda como cliente:` }]
+        system: 'Você é um cliente real de WhatsApp interessado em comprar. Responda de forma natural, curta e realista — como uma pessoa comum responderia no WhatsApp. Use linguagem informal, sem pontuação perfeita, às vezes com erros de digitação leves. Faça perguntas relevantes sobre o produto, peça descontos, pergunte sobre prazo de entrega ou pagamento. Máximo 2 frases. Nunca diga que é IA. Responda APENAS a mensagem, sem prefixos como "Cliente:" ou aspas.',
+        prompt: 'Histórico da conversa:\n' + conv + '\n\nO vendedor acabou de dizer: "' + lastSellerMsg + '"\n\nResponda como cliente:',
+        max_tokens: 200
       })
     });
     const data = await res.json();
-    const reply = data.content?.[0]?.text?.trim() || '';
+    const reply = data.text || '';
 
     hideTyping();
 
@@ -1139,26 +1133,20 @@ async function humanizeSuggestion() {
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> Humanizando...';
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch(API_URL + '/api/ai', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': ANTHROPIC_KEY,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 500,
         system: 'Você é um especialista em comunicação humana. Reescreva a mensagem de forma mais calorosa, natural e pessoal — como se um amigo experiente estivesse escrevendo. Mantenha o conteúdo e o objetivo, mas suavize o tom, adicione toque humano e remova qualquer rispidez. Responda APENAS com a mensagem reescrita, sem aspas, sem explicações.',
-        messages: [{ role: 'user', content: 'Humanize esta mensagem de vendas:\n\n' + text }]
+        prompt: 'Humanize esta mensagem de vendas:\n\n' + text,
+        max_tokens: 500
       })
     });
     const data = await res.json();
-    if (data.content && data.content[0]) {
-      el.value = data.content[0].text.trim();
-    } else if (data.error) {
-      console.error('Erro Anthropic:', data.error);
+    if (data.text) {
+      el.value = data.text;
+    } else {
+      console.error('Erro:', data);
     }
   } catch(e) {
     console.error('Erro humanizar:', e);
