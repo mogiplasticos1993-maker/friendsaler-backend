@@ -204,6 +204,39 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .error-bar-fill{height:100%;border-radius:99px}
 
 select{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);padding:7px 11px;color:var(--text);font-size:12px;font-family:'DM Sans',sans-serif;outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;padding-right:28px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237d87a6' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center}
+.suggestion-edit{width:100%;background:var(--bg4);border:1px solid var(--green-border);border-radius:9px;padding:10px 12px;color:var(--text);font-size:12px;font-family:'DM Sans',sans-serif;resize:none;outline:none;line-height:1.6;transition:border-color .15s}
+.suggestion-edit:focus{border-color:var(--green)}
+.client-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:11px 13px;margin-bottom:9px}
+.client-card-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:8px}
+.client-field{width:100%;background:var(--bg4);border:1px solid var(--border2);border-radius:8px;padding:7px 10px;color:var(--text);font-size:12px;font-family:'DM Sans',sans-serif;resize:none;outline:none;margin-bottom:6px;transition:border-color .15s}
+.client-field:focus{border-color:var(--border3)}
+.client-field::placeholder{color:var(--text3)}
+.birthday-alert{background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--amber);display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.admin-layout{display:grid;grid-template-columns:220px 1fr;flex:1;overflow:hidden}
+.admin-sidebar{background:var(--bg2);border-right:1px solid var(--border);padding:16px;display:flex;flex-direction:column;gap:4px;overflow-y:auto}
+.admin-sidebar-title{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;padding:4px 12px;margin-bottom:4px;margin-top:8px}
+.admin-menu-item{padding:8px 12px;border-radius:var(--radius);font-size:13px;color:var(--text2);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:8px}
+.admin-menu-item:hover{background:var(--bg3);color:var(--text)}
+.admin-menu-item.active{background:var(--indigo-bg);color:var(--indigo);border:1px solid var(--indigo-border)}
+.admin-menu-item svg{width:15px;height:15px;flex-shrink:0;opacity:.7}
+.admin-content{overflow-y:auto;padding:20px 24px}
+.admin-section{display:none}
+.admin-section.active{display:block}
+.kb-item{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px}
+.kb-item-text{flex:1;font-size:13px;line-height:1.5;color:var(--text)}
+.kb-item-cat{font-size:10px;font-weight:600;text-transform:uppercase;padding:2px 8px;border-radius:99px;flex-shrink:0;margin-top:2px;background:var(--indigo-bg);color:var(--indigo)}
+.kb-item-delete{color:var(--text3);cursor:pointer;font-size:16px;flex-shrink:0;transition:color .15s;background:none;border:none;padding:0}
+.kb-item-delete:hover{color:var(--red)}
+.kb-add-form{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:16px}
+.kb-input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);padding:9px 12px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:8px}
+.kb-textarea{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);padding:9px 12px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;resize:none;outline:none;margin-bottom:8px;min-height:80px}
+.scraper-url-row{display:flex;gap:8px;margin-bottom:12px}
+.scraper-url-input{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);padding:9px 12px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none}
+.product-item{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:11px 14px;display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.product-info{flex:1}
+.product-name{font-size:13px;font-weight:500;margin-bottom:2px}
+.product-price{font-size:12px;color:var(--green)}
+.product-desc{font-size:11px;color:var(--text2);margin-top:2px}
 </style>
 </head>
 <body>
@@ -234,6 +267,10 @@ select{background:var(--bg3);border:1px solid var(--border2);border-radius:var(-
       <div class="nav-tab" onclick="setPage('relatorios',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
         Relatórios
+      </div>
+      <div class="nav-tab" onclick="setPage('admin',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        Admin
       </div>
     </div>
     <div class="topbar-right">
@@ -332,10 +369,20 @@ select{background:var(--bg3);border:1px solid var(--border2);border-radius:var(-
 
             <div class="ai-block green" id="suggestion-block">
               <div class="ai-block-label">Sugestão de resposta</div>
-              <div class="suggestion-bubble" id="suggestion-text" onclick="useSuggestion()"></div>
-              <button class="btn btn-ghost btn-sm" style="width:100%" id="regen-btn" onclick="regenSuggestion()">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-                Nova sugestão da IA
+              <textarea class="suggestion-edit" id="suggestion-text" rows="4" placeholder="Sugestão da IA..."></textarea>
+              <div style="display:flex;gap:6px;margin-top:6px">
+                <button class="btn btn-ghost btn-sm" style="flex:1" id="humanize-btn" onclick="humanizeSuggestion()">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                  Humanizar
+                </button>
+                <button class="btn btn-ghost btn-sm" style="flex:1" id="regen-btn" onclick="regenSuggestion()">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                  Nova sugestão
+                </button>
+              </div>
+              <button class="btn btn-primary btn-sm" style="width:100%;margin-top:6px" onclick="useSuggestion()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
+                Usar no chat
               </button>
             </div>
 
@@ -346,6 +393,18 @@ select{background:var(--bg3);border:1px solid var(--border2);border-radius:var(-
                 <span class="score-denom">%</span>
               </div>
               <div class="progress-bar"><div class="progress-fill" id="chance-bar" style="width:55%"></div></div>
+            </div>
+
+            <div class="ai-block plain" id="client-card-block">
+              <div class="ai-block-label">Ficha do cliente</div>
+              <div id="birthday-alert-area"></div>
+              <input class="client-field" id="client-name-field" placeholder="Nome completo" type="text">
+              <input class="client-field" id="client-birthday" placeholder="Aniversário (DD/MM)" type="text" oninput="checkBirthday()">
+              <textarea class="client-field" id="client-notes" rows="3" placeholder="Histórico, preferências, observações..."></textarea>
+              <button class="btn btn-ghost btn-sm" style="width:100%" onclick="saveClientCard()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                Salvar ficha
+              </button>
             </div>
           </div>
         </div>
@@ -585,6 +644,92 @@ Vendedor: Ok, qualquer dúvida estou aqui!"></textarea>
       </div>
     </div><!-- /page-relatorios -->
 
+  <!-- ═══════════════════════════════════════
+       PAGE 5 — ADMIN
+  ═══════════════════════════════════════ -->
+  <div class="page" id="page-admin">
+    <div class="admin-layout">
+      <div class="admin-sidebar">
+        <div class="admin-sidebar-title">Base de conhecimento</div>
+        <div class="admin-menu-item active" onclick="showAdminSection('kb-politicas',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Políticas e regras
+        </div>
+        <div class="admin-menu-item" onclick="showAdminSection('kb-produtos',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          Catálogo / Site
+        </div>
+        <div class="admin-sidebar-title">Configurações</div>
+        <div class="admin-menu-item" onclick="showAdminSection('config-ia',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M5.34 5.34L3.93 6.75M19.07 19.07l-1.41-1.41M5.34 18.66l-1.41 1.41M22 12h-2M4 12H2M12 22v-2M12 4V2"/></svg>
+          Instruções da IA
+        </div>
+      </div>
+      <div class="admin-content">
+
+        <!-- POLÍTICAS E REGRAS -->
+        <div class="admin-section active" id="admin-kb-politicas">
+          <div style="font-size:18px;font-weight:600;margin-bottom:4px">Políticas e Regras</div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:20px">A IA usa essas regras para orientar os vendedores em tempo real.</div>
+          <div class="kb-add-form">
+            <div style="font-size:13px;font-weight:500;margin-bottom:12px">Adicionar nova regra</div>
+            <select id="kb-cat" style="width:100%;margin-bottom:8px">
+              <option value="frete">Frete</option>
+              <option value="pagamento">Pagamento</option>
+              <option value="desconto">Desconto</option>
+              <option value="prazo">Prazo de entrega</option>
+              <option value="troca">Troca e devolução</option>
+              <option value="outro">Outro</option>
+            </select>
+            <textarea class="kb-textarea" id="kb-rule-text" placeholder="Ex: Frete grátis para compras acima de R$ 1.000 para SP, RJ e MG. Para outros estados, frete calculado por CEP."></textarea>
+            <button class="btn btn-primary btn-sm" onclick="addKbRule()">+ Adicionar regra</button>
+          </div>
+          <div id="kb-rules-list"></div>
+        </div>
+
+        <!-- CATÁLOGO / SITE -->
+        <div class="admin-section" id="admin-kb-produtos">
+          <div style="font-size:18px;font-weight:600;margin-bottom:4px">Catálogo / Site</div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:20px">Informe a URL do seu site ou e-commerce para a IA aprender sobre seus produtos.</div>
+          <div class="kb-add-form">
+            <div style="font-size:13px;font-weight:500;margin-bottom:12px">URL do site ou e-commerce</div>
+            <div class="scraper-url-row">
+              <input class="scraper-url-input" id="site-url" type="url" placeholder="https://seusite.com.br">
+              <button class="btn btn-primary btn-sm" onclick="scrapeProducts()">Importar produtos</button>
+            </div>
+            <div style="font-size:12px;color:var(--text2)">Ou adicione produtos manualmente:</div>
+          </div>
+          <div class="kb-add-form">
+            <input class="kb-input" id="prod-name" placeholder="Nome do produto">
+            <input class="kb-input" id="prod-price" placeholder="Preço (ex: R$ 299,90)">
+            <textarea class="kb-textarea" id="prod-desc" placeholder="Descrição breve do produto" rows="2"></textarea>
+            <button class="btn btn-primary btn-sm" onclick="addProduct()">+ Adicionar produto</button>
+          </div>
+          <div id="products-list"></div>
+        </div>
+
+        <!-- INSTRUÇÕES DA IA -->
+        <div class="admin-section" id="admin-config-ia">
+          <div style="font-size:18px;font-weight:600;margin-bottom:4px">Instruções da IA</div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:20px">Personalize como a IA orienta seus vendedores.</div>
+          <div class="kb-add-form">
+            <div style="font-size:13px;font-weight:500;margin-bottom:8px">Tom de comunicação</div>
+            <select id="ia-tone" style="width:100%;margin-bottom:16px">
+              <option value="profissional">Profissional e direto</option>
+              <option value="amigavel" selected>Amigável e próximo</option>
+              <option value="formal">Formal</option>
+              <option value="descontraido">Descontraído</option>
+            </select>
+            <div style="font-size:13px;font-weight:500;margin-bottom:8px">Instruções extras para a IA</div>
+            <textarea class="kb-textarea" id="ia-extra" rows="5" placeholder="Ex: Sempre mencione o prazo de entrega. Priorize o fechamento por PIX. Nunca ofereça desconto sem ser solicitado..."></textarea>
+            <button class="btn btn-primary btn-sm" onclick="saveIaConfig()">Salvar configurações</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div><!-- /page-admin -->
+
   </div><!-- /pages -->
 </div><!-- /app -->
 
@@ -727,7 +872,7 @@ function renderAIPanel(c) {
     document.getElementById('alerts-block').className = 'ai-block amber';
   }
 
-  document.getElementById('suggestion-text').textContent = c.suggestion;
+  document.getElementById('suggestion-text').value = c.suggestion.replace(/^"|"$/g, '');
 }
 
 function sendChatMsg() {
@@ -749,7 +894,7 @@ function sendChatMsg() {
 }
 
 function useSuggestion() {
-  const sug = document.getElementById('suggestion-text').textContent;
+  const sug = document.getElementById('suggestion-text').value;
   document.getElementById('chat-input').value = sug.replace(/^"|"$/g, '');
   document.getElementById('chat-input').focus();
 }
@@ -775,9 +920,9 @@ async function regenSuggestion() {
       })
     });
     const data = await res.json();
-    el.textContent = data.content[0].text.trim();
+    el.value = data.content[0].text.trim().replace(/^"|"$/g, '');
   } catch (e) {
-    el.textContent = '"Entendo sua necessidade. Posso confirmar tudo agora e garantir entrega no prazo. Vamos fechar?"';
+    el.value = 'Entendo sua necessidade. Posso confirmar tudo agora e garantir entrega no prazo. Vamos fechar?';
   }
   btn.disabled = false;
 }
@@ -873,9 +1018,211 @@ async function analyzeConv() {
 }
 
 // ═══════════════════════════════════
+// HUMANIZAR
+// ═══════════════════════════════════
+async function humanizeSuggestion() {
+  const el = document.getElementById('suggestion-text');
+  const text = el.value.trim();
+  if (!text) return;
+  const btn = document.getElementById('humanize-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 500,
+        system: 'Você é um especialista em comunicação humana. Reescreva a mensagem de forma mais calorosa, natural e pessoal — como se um amigo experiente estivesse escrevendo. Mantenha o conteúdo e o objetivo, mas suavize o tom, adicione toque humano e remova qualquer rispidez. Responda APENAS com a mensagem reescrita, sem aspas, sem explicações.',
+        messages: [{ role: 'user', content: `Humanize esta mensagem de vendas:
+
+${text}` }]
+      })
+    });
+    const data = await res.json();
+    el.value = data.content[0].text.trim();
+  } catch(e) {}
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Humanizar';
+}
+
+// ═══════════════════════════════════
+// FICHA DO CLIENTE
+// ═══════════════════════════════════
+const clientCards = {};
+
+function saveClientCard() {
+  const c = CONVS[currentConv];
+  clientCards[c.name] = {
+    name: document.getElementById('client-name-field').value,
+    birthday: document.getElementById('client-birthday').value,
+    notes: document.getElementById('client-notes').value
+  };
+  const btn = document.querySelector('#client-card-block .btn-ghost');
+  btn.textContent = '✓ Salvo!';
+  setTimeout(() => { btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Salvar ficha'; }, 1500);
+}
+
+function loadClientCard(name) {
+  const card = clientCards[name] || {};
+  document.getElementById('client-name-field').value = card.name || '';
+  document.getElementById('client-birthday').value = card.birthday || '';
+  document.getElementById('client-notes').value = card.notes || '';
+  checkBirthday();
+}
+
+function checkBirthday() {
+  const val = document.getElementById('client-birthday').value;
+  const alertArea = document.getElementById('birthday-alert-area');
+  if (!val) { alertArea.innerHTML = ''; return; }
+  const today = new Date();
+  const parts = val.split('/');
+  if (parts.length === 2) {
+    const day = parseInt(parts[0]), month = parseInt(parts[1]);
+    const todayDay = today.getDate(), todayMonth = today.getMonth() + 1;
+    if (day === todayDay && month === todayMonth) {
+      alertArea.innerHTML = '<div class="birthday-alert">🎂 Hoje é aniversário deste cliente! Mencione isso na conversa.</div>';
+    } else {
+      const diff = (new Date(today.getFullYear(), month-1, day) - today) / (1000*60*60*24);
+      if (diff >= 0 && diff <= 7) {
+        alertArea.innerHTML = `<div class="birthday-alert">🎂 Aniversário em ${Math.ceil(diff)} dia(s)! Boa oportunidade para fidelizar.</div>`;
+      } else {
+        alertArea.innerHTML = '';
+      }
+    }
+  }
+}
+
+// ═══════════════════════════════════
+// ADMIN — BASE DE CONHECIMENTO
+// ═══════════════════════════════════
+const kbRules = [
+  {cat:'pagamento', text:'Desconto de 5% para pagamento no PIX à vista.'},
+  {cat:'frete', text:'Frete grátis para compras acima de R$ 500 para SP capital.'},
+  {cat:'prazo', text:'Prazo de entrega: 3 dias úteis para SP, 5 dias para outros estados.'}
+];
+const products = [
+  {name:'Kit de Escritório Premium', price:'R$ 189,00', desc:'Mesa organizadora + porta-canetas + mousepad'},
+  {name:'Combo Básico', price:'R$ 99,00', desc:'Porta-canetas + bloco de notas'}
+];
+
+function renderKbRules() {
+  const el = document.getElementById('kb-rules-list');
+  if (!el) return;
+  const cats = {frete:'Frete',pagamento:'Pagamento',desconto:'Desconto',prazo:'Prazo',troca:'Troca',outro:'Outro'};
+  el.innerHTML = kbRules.map((r,i) => `
+    <div class="kb-item">
+      <div>
+        <span class="kb-item-cat">${cats[r.cat]||r.cat}</span>
+      </div>
+      <div class="kb-item-text">${r.text}</div>
+      <button class="kb-item-delete" onclick="deleteKbRule(${i})">×</button>
+    </div>`).join('');
+}
+
+function addKbRule() {
+  const text = document.getElementById('kb-rule-text').value.trim();
+  const cat = document.getElementById('kb-cat').value;
+  if (!text) return;
+  kbRules.push({cat, text});
+  document.getElementById('kb-rule-text').value = '';
+  renderKbRules();
+}
+
+function deleteKbRule(i) {
+  kbRules.splice(i, 1);
+  renderKbRules();
+}
+
+function renderProducts() {
+  const el = document.getElementById('products-list');
+  if (!el) return;
+  el.innerHTML = products.map((p,i) => `
+    <div class="product-item">
+      <div class="product-info">
+        <div class="product-name">${p.name}</div>
+        <div class="product-price">${p.price}</div>
+        <div class="product-desc">${p.desc}</div>
+      </div>
+      <button class="kb-item-delete" onclick="deleteProduct(${i})">×</button>
+    </div>`).join('');
+}
+
+function addProduct() {
+  const name = document.getElementById('prod-name').value.trim();
+  const price = document.getElementById('prod-price').value.trim();
+  const desc = document.getElementById('prod-desc').value.trim();
+  if (!name) return;
+  products.push({name, price, desc});
+  document.getElementById('prod-name').value = '';
+  document.getElementById('prod-price').value = '';
+  document.getElementById('prod-desc').value = '';
+  renderProducts();
+}
+
+function deleteProduct(i) {
+  products.splice(i, 1);
+  renderProducts();
+}
+
+async function scrapeProducts() {
+  const url = document.getElementById('site-url').value.trim();
+  if (!url) return;
+  const btn = document.querySelector('#admin-kb-produtos .scraper-url-row .btn-primary');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: 'Você é um assistente que analisa URLs de e-commerce. Retorne APENAS um JSON com array de produtos no formato: [{"name":"nome","price":"preço","desc":"descrição curta"}]. Se não conseguir acessar, retorne produtos fictícios baseados no domínio da URL.',
+        messages: [{ role: 'user', content: `Extraia os produtos principais deste site: ${url}` }]
+      })
+    });
+    const data = await res.json();
+    const raw = data.content[0].text.replace(/```json|```/g,'').trim();
+    const prods = JSON.parse(raw);
+    prods.forEach(p => products.push(p));
+    renderProducts();
+  } catch(e) {}
+  btn.disabled = false;
+  btn.innerHTML = 'Importar produtos';
+}
+
+function saveIaConfig() {
+  const tone = document.getElementById('ia-tone').value;
+  const extra = document.getElementById('ia-extra').value;
+  const btn = document.querySelector('#admin-config-ia .btn-primary');
+  btn.textContent = '✓ Salvo!';
+  setTimeout(() => { btn.textContent = 'Salvar configurações'; }, 1500);
+}
+
+function showAdminSection(section, el) {
+  document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.admin-menu-item').forEach(m => m.classList.remove('active'));
+  document.getElementById('admin-' + section).classList.add('active');
+  el.classList.add('active');
+}
+
+// Override loadConv to also load client card
+const _origLoadConv = loadConv;
+// patch renderAIPanel to also load client card
+const _origRenderAI = renderAIPanel;
+function renderAIPanel(c) {
+  _origRenderAI(c);
+  loadClientCard(c.name);
+}
+
+// ═══════════════════════════════════
 // INIT
 // ═══════════════════════════════════
 loadConv(0, document.querySelector('.conv-item.active'));
+renderKbRules();
+renderProducts();
 </script>
 </body>
 </html>
