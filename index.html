@@ -941,17 +941,23 @@ async function simulateClientReply(c, lastSellerMsg) {
   const conv = c.msgs.map(m => `${m.from === 'client' ? 'Cliente' : 'Vendedor'}: ${m.text}`).join('\n');
 
   try {
-    const res = await fetch(API_URL + '/api/ai', {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
       body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 200,
         system: 'Você é um cliente real de WhatsApp interessado em comprar. Responda de forma natural, curta e realista — como uma pessoa comum responderia no WhatsApp. Use linguagem informal, sem pontuação perfeita, às vezes com erros de digitação leves. Faça perguntas relevantes sobre o produto, peça descontos, pergunte sobre prazo de entrega ou pagamento. Máximo 2 frases. Nunca diga que é IA. Responda APENAS a mensagem do cliente, sem prefixos como "Cliente:" ou aspas.',
-        prompt: `Histórico da conversa:\n${conv}\n\nO vendedor acabou de dizer: "${lastSellerMsg}"\n\nResponda como cliente:`,
-        max_tokens: 200
+        messages: [{ role: 'user', content: `Histórico da conversa:\n${conv}\n\nO vendedor acabou de dizer: "${lastSellerMsg}"\n\nResponda como cliente:` }]
       })
     });
     const data = await res.json();
-    const reply = data.text || data.content?.[0]?.text || '';
+    const reply = data.content?.[0]?.text?.trim() || '';
 
     hideTyping();
 
@@ -984,17 +990,23 @@ async function regenSuggestion() {
   const conv = c.msgs.map(m => `${m.from === 'client' ? 'Cliente' : 'Vendedor'}: ${m.text}`).join('\n');
 
   try {
-    const res = await fetch(API_URL + '/api/ai', {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
       body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 300,
         system: 'Você é um coach de vendas especialista. Analise a conversa e gere UMA sugestão de resposta curta, direta e persuasiva para o vendedor. O objetivo é avançar a venda ou fechar. Responda APENAS com a sugestão, sem aspas, sem explicações.',
-        prompt: `Conversa:\n${conv}\n\nGere a melhor resposta para o vendedor agora.`,
-        max_tokens: 300
+        messages: [{ role: 'user', content: `Conversa:\n${conv}\n\nGere a melhor resposta para o vendedor agora.` }]
       })
     });
     const data = await res.json();
-    el.value = (data.text || '').replace(/^"|"$/g, '');
+    el.value = (data.content?.[0]?.text?.trim() || '').replace(/^"|"$/g, '');
   } catch (e) {
     el.value = 'Entendo sua necessidade. Posso confirmar tudo agora e garantir entrega no prazo. Vamos fechar?';
   }
@@ -1036,12 +1048,24 @@ async function analyzeConv() {
   result.innerHTML = '<div class="result-placeholder"><span class="spinner" style="width:20px;height:20px;border-width:3px"></span><br>A IA está analisando a conversa...</div>';
 
   try {
-    const res = await fetch(API_URL + '/api/analyze', {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text })
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: 'Você é um especialista em análise de vendas. Avalie conversas de WhatsApp e retorne SOMENTE um JSON válido, sem markdown, sem texto extra:\n{"nota":7,"chance":65,"acertos":["acerto 1","acerto 2"],"erros":["erro 1","erro 2"],"sugestao":"resposta ideal do vendedor","resumo":"resumo em 1 frase curta"}',
+        messages: [{ role: 'user', content: `Analise esta conversa:\n\n${text}` }]
+      })
     });
-    const j = await res.json();
+    const data = await res.json();
+    const raw = data.content[0].text.replace(/```json|```/g, '').trim();
+    const j = JSON.parse(raw);
 
     const sc = j.nota >= 7 ? 'var(--green)' : j.nota >= 5 ? 'var(--amber)' : 'var(--red)';
     const cc = j.chance >= 70 ? 'var(--green)' : j.chance >= 40 ? 'var(--amber)' : 'var(--red)';
