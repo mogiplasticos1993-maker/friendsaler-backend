@@ -12,9 +12,10 @@ const PORT = process.env.PORT || 3000;
 
 // ── Variáveis de ambiente (configure no Railway) ──
 const ANTHROPIC_API_KEY  = process.env.ANTHROPIC_API_KEY  || '';
-const WHATSAPP_TOKEN     = process.env.WHATSAPP_TOKEN     || ''; // Token gerado pela Zenvia/Meta
+const WHATSAPP_TOKEN     = process.env.WHATSAPP_TOKEN     || '';
 const VERIFY_TOKEN       = process.env.VERIFY_TOKEN       || 'friendsaler_verify_2024';
-const WHATSAPP_API_URL   = process.env.WHATSAPP_API_URL   || ''; // URL da API Zenvia ou Cloud API
+const WHATSAPP_API_URL   = process.env.WHATSAPP_API_URL   || '';
+const GROQ_API_KEY       = process.env.GROQ_API_KEY       || ''; // Chave da Groq para transcrição de áudio
 
 app.use(cors());
 app.use(express.json());
@@ -75,14 +76,29 @@ app.post('/webhook', async (req, res) => {
           const value = change.value;
 
           for (const msg of value.messages || []) {
-            if (msg.type !== 'text') continue;
+            if (msg.type !== 'text' && msg.type !== 'audio') continue;
 
             const phone   = msg.from;
-            const text    = msg.text.body;
             const time    = new Date(parseInt(msg.timestamp) * 1000).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
             const contact = value.contacts?.[0]?.profile?.name || phone;
 
-            await processIncomingMessage({ phone, text, time, contact, from: 'client' });
+            if (msg.type === 'audio') {
+              // Busca a URL do áudio na API do WhatsApp
+              const mediaId = msg.audio.id;
+              const mimeType = msg.audio.mime_type || 'audio/ogg';
+              let audioUrl = null;
+              try {
+                const mediaRes = await fetch(`https://graph.facebook.com/v19.0/${mediaId}`, {
+                  headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` }
+                });
+                const mediaData = await mediaRes.json();
+                audioUrl = mediaData.url;
+              } catch(e) { console.error('Erro ao buscar URL do áudio:', e.message); }
+              await processIncomingMessage({ phone, text: '', time, contact, from: 'client', audioUrl, mimeType });
+            } else {
+              const text = msg.text.body;
+              await processIncomingMessage({ phone, text, time, contact, from: 'client' });
+            }
           }
         }
       }
@@ -109,8 +125,15 @@ app.post('/webhook', async (req, res) => {
 // ═══════════════════════════════════════════════════════════
 //  PROCESSA MENSAGEM RECEBIDA
 // ═══════════════════════════════════════════════════════════
-async function processIncomingMessage({ phone, text, time, contact, from }) {
-  console.log(`📩 Nova mensagem de ${contact} (${phone}): ${text}`);
+async function processIncomingMessage({ phone, text, time, contact, from, audioUrl, mimeType }) {
+  // Se for áudio, transcreve primeiro
+  let finalText = text;
+  if (audioUrl) {
+    console.log(`🎤 Áudio recebido de ${contact} — transcrevendo...`);
+    finalText = await transcribeAudio(audioUrl, mimeType);
+  }
+
+  console.log(`📩 Nova mensagem de ${contact} (${phone}): ${finalText}`);
 
   // Cria conversa se não existir
   if (!db.conversations[phone]) {
@@ -125,7 +148,7 @@ async function processIncomingMessage({ phone, text, time, contact, from }) {
   }
 
   const conv = db.conversations[phone];
-  conv.messages.push({ from, text, time });
+  conv.messages.push({ from, text: finalText, time, isAudio: !!audioUrl });
   conv.lastActivity = new Date().toISOString();
 
   // Analisa a conversa com IA após cada mensagem do cliente
@@ -183,6 +206,67 @@ function mockAnalysis() {
     resumo: 'Análise indisponível — configure a API key.',
     alertas: ['Configure ANTHROPIC_API_KEY no Railway']
   };
+}
+
+// ═══════════════════════════════════════════════════════════
+//  TRANSCRIÇÃO DE ÁUDIO — GROQ WHISPER
+// ═══════════════════════════════════════════════════════════
+async function transcribeAudio(audioUrl, mimeType = 'audio/ogg') {
+  if (!GROQ_API_KEY) {
+    console.warn('⚠️  GROQ_API_KEY não configurada — áudio não transcrito');
+    return '[Áudio recebido — configure GROQ_API_KEY para transcrever]';
+  }
+
+  try {
+    // 1. Baixa o arquivo de áudio do WhatsApp
+    const audioRes = await fetch(audioUrl, {
+      headers: WHATSAPP_TOKEN ? { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } : {}
+    });
+
+    if (!audioRes.ok) throw new Error('Não foi possível baixar o áudio');
+
+    const audioBuffer = await audioRes.arrayBuffer();
+    const audioBlob = new Uint8Array(audioBuffer);
+
+    // 2. Envia para a Groq Whisper via multipart/form-data
+    const FormData = (await import('node:buffer')).Blob;
+    const boundary = '----FriendsalerBoundary' + Date.now();
+
+    // Monta o body multipart manualmente
+    const ext = mimeType.includes('ogg') ? 'ogg' : mimeType.includes('mp4') ? 'mp4' : 'wav';
+    const filename = `audio.${ext}`;
+
+    const pre = Buffer.from(
+      `--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="${filename}"\r\nContent-Type: ${mimeType}\r\n\r\n`
+    );
+    const post = Buffer.from(
+      `\r\n--${boundary}\r\nContent-Disposition: form-data; name="model"\r\n\r\nwhisper-large-v3-turbo\r\n--${boundary}\r\nContent-Disposition: form-data; name="language"\r\n\r\npt\r\n--${boundary}\r\nContent-Disposition: form-data; name="response_format"\r\n\r\njson\r\n--${boundary}--\r\n`
+    );
+
+    const body = Buffer.concat([pre, Buffer.from(audioBlob), post]);
+
+    const groqRes = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
+        'Content-Type': `multipart/form-data; boundary=${boundary}`
+      },
+      body
+    });
+
+    const groqData = await groqRes.json();
+
+    if (groqData.text) {
+      console.log(`🎤 Áudio transcrito: "${groqData.text.substring(0, 60)}..."`);
+      return `🎤 [Áudio]: ${groqData.text}`;
+    }
+
+    return '[Áudio recebido — não foi possível transcrever]';
+
+  } catch (err) {
+    console.error('Erro na transcrição:', err.message);
+    return '[Áudio recebido — erro na transcrição]';
+  }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -294,6 +378,14 @@ app.post('/api/suggest', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// Transcrição manual de áudio (para testes)
+app.post('/api/transcribe', async (req, res) => {
+  const { audioUrl, mimeType } = req.body;
+  if (!audioUrl) return res.status(400).json({ error: 'audioUrl obrigatório' });
+  const text = await transcribeAudio(audioUrl, mimeType || 'audio/ogg');
+  res.json({ text });
 });
 
 // Métricas para o painel e relatórios
