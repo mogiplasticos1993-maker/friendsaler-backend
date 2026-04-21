@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Friendsaler — Conectar WhatsApp</title>
+<style>
+  body{font-family:sans-serif;background:#0f1117;color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}
+  .box{background:#1a1f2e;border:1px solid #2a3145;border-radius:16px;padding:32px;text-align:center;max-width:400px;width:100%}
+  h2{margin:0 0 8px;font-size:20px}
+  p{color:#8b91a8;font-size:13px;margin:0 0 24px}
+  #qr-wrap{background:#fff;border-radius:12px;padding:16px;display:inline-block;margin-bottom:20px;min-width:200px;min-height:200px;display:flex;align-items:center;justify-content:center}
+  #qr-wrap img{width:200px;height:200px}
+  .status{font-size:13px;color:#8b91a8;margin-bottom:16px}
+  .status.connected{color:#22c55e}
+  .status.waiting{color:#f59e0b}
+  .status.error{color:#ef4444}
+  button{background:#6366f1;color:#fff;border:none;border-radius:10px;padding:10px 24px;font-size:14px;cursor:pointer;width:100%}
+  button:hover{background:#4f46e5}
+  button:disabled{opacity:.4;cursor:default}
+  .spinner{display:inline-block;width:32px;height:32px;border:3px solid #2a3145;border-top-color:#6366f1;border-radius:50%;animation:spin .7s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="box">
+  <h2>🤝 Friendsaler</h2>
+  <p>Escaneie o QR Code com seu WhatsApp para conectar</p>
+
+  <div id="qr-wrap">
+    <div class="spinner"></div>
+  </div>
+
+  <div class="status waiting" id="status">Gerando QR Code...</div>
+  <button onclick="getQR()" id="btn">↺ Gerar novo QR Code</button>
+</div>
+
+<script>
+const API_URL  = 'https://evolution-api-r0mu.onrender.com';
+const API_KEY  = 'friendsaler2024';
+const INSTANCE = 'mogi-plasticos';
+
+async function getQR() {
+  const btn    = document.getElementById('btn');
+  const status = document.getElementById('status');
+  const wrap   = document.getElementById('qr-wrap');
+
+  btn.disabled = true;
+  status.textContent = 'Gerando QR Code...';
+  status.className = 'status waiting';
+  wrap.innerHTML = '<div class="spinner"></div>';
+
+  try {
+    const res = await fetch(`${API_URL}/instance/connect/${INSTANCE}`, {
+      headers: { 'apikey': API_KEY }
+    });
+    const data = await res.json();
+
+    if (data.base64) {
+      wrap.innerHTML = `<img src="${data.base64}" alt="QR Code WhatsApp">`;
+      status.textContent = 'Escaneie com seu WhatsApp agora!';
+      status.className = 'status waiting';
+      // Verifica conexão a cada 3s
+      setTimeout(checkConnection, 3000);
+    } else if (data.instance?.state === 'open') {
+      wrap.innerHTML = '<span style="font-size:48px">✅</span>';
+      status.textContent = 'WhatsApp conectado!';
+      status.className = 'status connected';
+    } else {
+      wrap.innerHTML = '<span style="font-size:48px">⚠️</span>';
+      status.textContent = 'Erro ao gerar QR Code. Tente novamente.';
+      status.className = 'status error';
+    }
+  } catch(e) {
+    wrap.innerHTML = '<span style="font-size:48px">❌</span>';
+    status.textContent = 'Erro de conexão: ' + e.message;
+    status.className = 'status error';
+  }
+  btn.disabled = false;
+}
+
+async function checkConnection() {
+  try {
+    const res = await fetch(`${API_URL}/instance/connectionState/${INSTANCE}`, {
+      headers: { 'apikey': API_KEY }
+    });
+    const data = await res.json();
+    if (data.instance?.state === 'open') {
+      document.getElementById('qr-wrap').innerHTML = '<span style="font-size:64px">✅</span>';
+      document.getElementById('status').textContent = 'WhatsApp conectado com sucesso!';
+      document.getElementById('status').className = 'status connected';
+    } else {
+      setTimeout(checkConnection, 3000);
+    }
+  } catch(e) {}
+}
+
+getQR();
+</script>
+</body>
+</html>
